@@ -1,0 +1,107 @@
+---
+title: "R Practice"
+author: "Ashley"
+date: "11/27/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+options(repos="https://cran.rstudio.com")
+
+install.packages("dplyr")
+install.packages("magrittr")
+install.packages("haven")
+install.packages("estimatr")
+library(estimatr)
+library(haven)
+library(dplyr)
+library(magrittr)
+library(readxl)
+setwd("C:/Users/Ashley")
+
+ohie_data = read_dta("C:/Users/Ashley/OHIE.dta")
+
+itt_bp <- lm_robust(tab2bp_hyper ~ treatment, data=ohie_data)
+itt_bp
+
+itt_posscreen <- lm_robust(tab2phqtot_high ~ treatment, data=ohie_data)
+itt_posscreen
+
+itt_cmedex <- lm_robust(tab4_catastrophic_exp_inp ~ treatment, data=ohie_data)
+itt_cmedex
+
+itt_needmed <- lm_robust(tab5_needmet_med_inp ~ treatment, data=ohie_data)
+itt_needmed
+```
+
+```{r}
+
+
+bp_naive = lm_robust(ohie_data$tab2bp_hyper~ohie_data$ohp_all_ever_admin)
+bp_naive
+
+dep_naive = lm_robust(ohie_data$tab2phqtot_high ~ ohie_data$ohp_all_ever_admin)
+dep_naive
+
+cexp_naive = lm_robust(ohie_data$tab4_catastrophic_exp_inp~ohie_data$ohp_all_ever_admin)
+cexp_naive
+
+
+need_naive = lm_robust(ohie_data$tab5_needmet_med_inp~ohie_data$ohp_all_ever_admin)
+need_naive
+```
+
+
+```{r}
+first_stage_reg <- lm_robust(treatment ~ ohp_all_ever_admin, data=ohie_data)
+first_stage_reg
+```
+
+
+```{r}
+iv_bp <- iv_robust(tab2bp_hyper ~ ohp_all_ever_admin|treatment, data=ohie_data)
+iv_bp
+
+iv_dep <- iv_robust(tab2phqtot_high ~ ohp_all_ever_admin|treatment, data=ohie_data)
+iv_dep
+
+iv_cmedex <- iv_robust(tab4_catastrophic_exp_inp ~ ohp_all_ever_admin|treatment, data=ohie_data)
+iv_cmedex
+
+iv_needmed <- iv_robust(tab5_needmet_med_inp ~ ohp_all_ever_admin|treatment, data=ohie_data)
+iv_needmed
+
+```
+
+
+
+```{r}
+brf_data = read_dta("C:/Users/Ashley/bases_replication_final.dta")
+
+select_vars <- c("bases6", "lrmilnar_col", "year", "municipality")
+
+new_table <- brf_data[select_vars]
+
+bases_change <- new_table %>% group_by(year, municipality)  %>% summarise_all(list(mean))
+
+bases_change
+
+
+```
+
+
+```{r}
+install.packages("plm")
+library(plm)
+
+brf_data = read_dta("C:/Users/Ashley/bases_replication_final.dta")
+
+est_tw <- lm_robust(paratt ~ lrmilnar_col + factor(municipality) + factor(year), data = brf_data)
+est_tw
+```
+
